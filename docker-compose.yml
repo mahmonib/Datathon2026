@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    container_name: resilience-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Datasets:/app/Datasets:ro
+      - ./cache:/app/cache:ro
+      - solana-keys:/app/keys
+    env_file:
+      - .env
+    environment:
+      - DATASET_PATH=/app/Datasets/Tangerine/data
+      - CACHE_PATH=/app/cache
+      - SOLANA_NETWORK=devnet
+      - SOLANA_KEYPAIR_PATH=/app/keys/auditor-wallet.json
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: resilience-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  solana-keys:
